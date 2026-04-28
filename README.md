@@ -30,7 +30,7 @@ Allows uploading files, monitoring player status, and controlling playback — w
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/brightsign-cms.git
+git clone https://github.com/incrys/BrightSign-CMS.git
 cd brightsign-cms
 
 # Install dependencies
