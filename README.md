@@ -170,8 +170,12 @@ brightsign-cms/
 
 ---
 
-[![Donate PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge&logo=paypal)](https://paypal.me/incrys)
-
 ## License
 
 MIT
+
+---
+
+This project runs on caffeine and good intentions — feel free to fuel both ☕
+
+[![Donate PayPal](https://img.shields.io/badge/Donate-PayPal-blue?style=for-the-badge&logo=paypal)](https://paypal.me/incrys)
