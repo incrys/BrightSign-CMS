@@ -1,0 +1,16 @@
+{
+  "name": "brightsign-cms",
+  "version": "1.0.0",
+  "description": "BrightSign CMS - media player management portal",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "add-user": "node server/add-user.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.3",
+    "ldapjs": "^3.0.7"
+  }
+}

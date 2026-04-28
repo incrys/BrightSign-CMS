@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrightSign CMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── Playlist editor ───────────────────────────────────────── */
+    #playlist-editor-items { padding: 4px 0 8px; }
+    .pl-item {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 8px; border-radius: 6px;
+      background: var(--bg2, #1e1e2e); margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .pl-handle { color: var(--text2, #666); cursor: grab; font-size: 14px; }
+    .pl-icon   { font-size: 15px; flex-shrink: 0; }
+    .pl-name   { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pl-dur    { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .pl-dur-input {
+      width: 52px; padding: 2px 4px; border-radius: 4px;
+      border: 1px solid var(--border, #333);
+      background: var(--bg, #13131f); color: inherit;
+      font-size: 12px; text-align: center;
+    }
+    .pl-dur-label { font-size: 11px; color: var(--text2, #888); }
+    .pl-up, .pl-down, .pl-rm {
+      background: none; border: none; cursor: pointer;
+      color: var(--text2, #888); padding: 2px 4px;
+      border-radius: 4px; font-size: 13px; line-height: 1;
+    }
+    .pl-up:hover, .pl-down:hover { color: var(--accent, #7c6af7); }
+    .pl-rm:hover  { color: var(--red, #e05c5c); }
+    .playlist-actions {
+      display: flex; gap: 8px; padding: 6px 0 2px;
+    }
+    /* Bottone + playlist sui file card */
+    .fc-pl-btn {
+      position: absolute; bottom: 5px; right: 5px;
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1px solid var(--border, #444);
+      background: var(--bg2, #1e1e2e);
+      color: var(--text2, #aaa); font-size: 13px; line-height: 1;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s, color .15s;
+    }
+    .fc-pl-btn:hover        { background: var(--accent, #7c6af7); color: #fff; border-color: var(--accent, #7c6af7); }
+    .fc-pl-btn.in-playlist  { background: var(--accent, #7c6af7); color: #fff; border-color: var(--accent, #7c6af7); }
+    .file-card { position: relative; }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-dot"></span>
+      <span class="brand-text">BrightSign<br><em>CMS</em></span>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Player
+        <button class="btn-add" id="btn-add-player" title="Aggiungi player">+</button>
+      </div>
+      <div id="player-list"></div>
+    </div>
+
+    <div class="sidebar-section" id="preset-sidebar-section" style="display:none">
+      <div class="sidebar-label">Preset
+        <button class="btn-add" id="btn-new-preset" title="Nuovo preset">+</button>
+      </div>
+      <div id="preset-list"></div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div id="player-status-bar"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="content">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">📺</div>
+      <h2>Seleziona un player</h2>
+      <p>Scegli un player dalla sidebar o aggiungine uno nuovo</p>
+    </div>
+
+    <!-- Player workspace -->
+    <div class="workspace" id="workspace" style="display:none">
+
+      <!-- Header -->
+      <header class="workspace-header">
+        <div class="ws-title">
+          <span class="ws-dot" id="ws-dot"></span>
+          <h1 id="ws-name"></h1>
+          <span class="ws-badge" id="ws-model"></span>
+          <span class="ws-badge" id="ws-fw"></span>
+          <span class="ws-badge" id="ws-serial"></span>
+          <span class="ws-badge" id="ws-uptime"></span>
+          <span class="ws-badge" id="ws-storage"></span>
+        </div>
+        <div class="ws-actions">
+          <div class="autorun-pill" id="autorun-pill">
+            <span id="autorun-label">...</span>
+          </div>
+          <button class="ws-btn" id="btn-toggle-autorun" style="display:none"></button>
+          <button class="ws-btn ws-btn-ghost" id="btn-reboot">↺ Reboot</button>
+          <button class="ws-btn ws-btn-danger" id="btn-delete-player">✕</button>
+          <button class="ws-btn ws-btn-ghost" onclick="logout()" title="Esci" style="margin-left:8px">⏻ Esci</button>
+        </div>
+      </header>
+
+      <!-- Two-column layout -->
+      <div class="ws-body">
+
+        <!-- LEFT: file disponibili -->
+        <section class="panel panel-files">
+          <div class="panel-head">
+            <h3>File disponibili</h3>
+            <div class="panel-head-actions">
+              <label class="ws-btn ws-btn-ghost" style="cursor:pointer">
+                ⬆ Carica
+                <input type="file" id="file-input" multiple accept="video/*,image/*" style="display:none">
+              </label>
+              <button class="ws-btn ws-btn-ghost" id="btn-reload-files">↻</button>
+            </div>
+          </div>
+
+          <div id="upload-progress"></div>
+
+          <div class="file-sections" id="file-sections">
+            <p class="muted">Caricamento...</p>
+          </div>
+        </section>
+
+        <!-- RIGHT: root SD + playlist -->
+        <section class="panel panel-right">
+
+          <!-- Root SD -->
+          <div class="panel-head">
+            <h3>Root SD <span class="muted" style="font-weight:400;font-size:12px">(file in riproduzione)</span></h3>
+            <button class="ws-btn ws-btn-ghost" id="btn-reload-root">↻</button>
+          </div>
+          <div id="sd-root-list">
+            <p class="muted">Caricamento...</p>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="reboot-section">
+            <button class="ws-btn ws-btn-success" id="btn-reboot-cms">↺ Riavvia player</button>
+            <p class="muted small">Se hai aggiunto o rimosso file, riavvia il player per aggiornare la riproduzione.</p>
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toasts"></div>
+
+<!-- Modal: aggiungi player -->
+<div class="modal-bg" id="modal-player">
+  <div class="modal">
+    <h3>Aggiungi Player</h3>
+    <label>Nome<input type="text" id="np-name" placeholder="es. Nome arbitrario"></label>
+    <label>IP<input type="text" id="np-ip" placeholder="es. 10.170.XX.XXX"></label>
+    <label>Password DWS<input type="text" id="np-pass" placeholder="es. Password1!"></label>
+    <div class="modal-actions">
+      <button class="ws-btn ws-btn-ghost" id="btn-cancel-player">Annulla</button>
+      <button class="ws-btn ws-btn-primary" id="btn-confirm-player">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

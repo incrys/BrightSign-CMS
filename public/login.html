@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrightSign CMS — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg,#0f0f1a); }
+    .login-box {
+      width: 360px;
+      background: var(--bg2, #1a1a2e);
+      border: 1px solid var(--border, #2a2a3e);
+      border-radius: 12px;
+      padding: 40px 36px 32px;
+    }
+    .login-brand {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 32px;
+    }
+    .login-brand .brand-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent, #7c6af7);
+    }
+    .login-brand .brand-text {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600; font-size: 16px;
+      line-height: 1.2;
+    }
+    .login-brand .brand-text em { font-style:normal; opacity:.6; }
+    .login-box h2 { font-size:18px; margin-bottom:24px; font-weight:600; }
+    .login-box label {
+      display:block; margin-bottom:16px;
+      font-size:13px; color: var(--text2, #aaa);
+    }
+    .login-box input {
+      display:block; width:100%; margin-top:5px;
+      padding: 9px 12px; border-radius:6px;
+      border: 1px solid var(--border, #2a2a3e);
+      background: var(--bg, #0f0f1a); color: inherit;
+      font-size:14px; font-family:inherit; box-sizing:border-box;
+    }
+    .login-box input:focus { outline:none; border-color: var(--accent, #7c6af7); }
+    .btn-login {
+      width:100%; margin-top:8px; padding:10px;
+      background: var(--accent, #7c6af7); color:#fff;
+      border:none; border-radius:6px; font-size:14px;
+      font-weight:600; cursor:pointer; font-family:inherit;
+      transition: opacity .15s;
+    }
+    .btn-login:hover   { opacity:.85; }
+    .btn-login:disabled { opacity:.5; cursor:not-allowed; }
+    .login-error {
+      margin-top:14px; padding:9px 12px; border-radius:6px;
+      background: rgba(224,92,92,.15); color: #e05c5c;
+      font-size:13px; display:none;
+    }
+    .spin {
+      display:inline-block; width:12px; height:12px; margin-right:6px;
+      border:2px solid rgba(255,255,255,.3); border-top-color:#fff;
+      border-radius:50%; animation: spin .6s linear infinite;
+      vertical-align:middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="login-brand">
+      <span class="brand-dot"></span>
+      <span class="brand-text">BrightSign<br><em>CMS</em></span>
+    </div>
+    <h2>Accedi</h2>
+    <label>Username (sAMAccountName)
+      <input type="text" id="username" autocomplete="username" placeholder="mario.rossi">
+    </label>
+    <label>Password
+      <input type="password" id="password" autocomplete="current-password">
+    </label>
+    <button class="btn-login" id="btn-login">Accedi</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+
+  <script>
+    const btnLogin  = document.getElementById('btn-login');
+    const errBox    = document.getElementById('login-error');
+
+    async function doLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      if (!username || !password) { showError('Inserisci username e password'); return; }
+
+      btnLogin.disabled = true;
+      btnLogin.innerHTML = '<span class="spin"></span> Accesso in corso...';
+      errBox.style.display = 'none';
+
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await r.json();
+        if (r.ok) {
+          window.location.href = '/';
+        } else {
+          showError(data.error || 'Credenziali non valide');
+        }
+      } catch {
+        showError('Errore di connessione al server');
+      } finally {
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'Accedi';
+      }
+    }
+
+    function showError(msg) {
+      errBox.textContent = msg;
+      errBox.style.display = 'block';
+    }
+
+    btnLogin.addEventListener('click', doLogin);
+    document.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  </script>
+</body>
+</html>
