@@ -168,8 +168,8 @@ function renderFileGrid() {
   const sd  = allFiles.filter(f => f.source === 'sd');
 
   let html = '';
-  if (sd.length)  html += `<div class="file-group-label">📺 Nella root SD (in riproduzione)</div><div class="file-grid">${sd.map(f => fileCard(f, true)).join('')}</div>`;
-  if (cms.length) html += `<div class="file-group-label">📁 Caricati in sd/media/</div><div class="file-grid">${cms.map(f => fileCard(f, false)).join('')}</div>`;
+  if (sd.length)  html += `<div class="file-group-label">📺 Nella root SD (in riproduzione)</div><div class="file-grid">${sd.map(f => fileCard(f)).join('')}</div>`;
+  if (cms.length) html += `<div class="file-group-label">📁 Caricati in sd/media/</div><div class="file-grid">${cms.map(f => fileCard(f)).join('')}</div>`;
 
   // Sezione BAC con playlist
   if (bacPlaylist) {
@@ -263,17 +263,7 @@ async function sendUdp(message) {
   } catch(e) { toast(`Errore UDP: ${e.message}`, 'error'); }
 }
 
-function fileCard(f, alreadyOnSd) {
-  const check = alreadyOnSd ? '<div class="fc-check" style="display:flex">✓</div>' : '';
-  const style = alreadyOnSd ? ' style="opacity:.5;cursor:default"' : '';
-  const cls   = alreadyOnSd ? ' file-card-readonly' : '';
-  return `<div class="file-card${cls}" data-name="${f.name}"${style}>
-    ${check}
-    <div class="fc-icon">${iconFor(f.name)}</div>
-    <div class="fc-name">${f.name}</div>
-    <div class="fc-size">${fmtSize(f.size)}</div>
-  </div>`;
-}
+
 
 async function copyToSd(name) {
   const f = allFiles.find(f => f.name === name);
